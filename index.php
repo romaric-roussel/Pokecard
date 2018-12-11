@@ -16,7 +16,7 @@ $c = new \Slim\Container($configuration);
 $app = new \Slim\App($c);
 
 
-$app->get('/pokemon', function ($request, $response) {
+$app->get('/pokemon', function ($response) {
 
 
     //instantiate DB & connect
@@ -123,9 +123,14 @@ $app->get('/url/{id}', function ($request, $response) {
 });
 
 
-$app->post('/pokemon', function($request,$response){
+$app->post('/pokemon', function(){
 
-    $data = $request->getParsedBody();
+    $database = new Database();
+    $db = $database->connect();
+
+    $pokemon = new Pokemon($db);
+
+    $data = json_decode(file_get_contents("php://input"));
 
     $pokemon->setId($data->id_pokemon);
     $pokemon->setNom($data->nom);
