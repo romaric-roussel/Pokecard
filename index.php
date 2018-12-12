@@ -16,11 +16,23 @@ $configuration = [
         'displayErrorDetails' => true,
     ],
 ];
+$route = [
+    "pokemon" => "/pokemon",
+    "pokemon_id" => "/pokemon/{id}",
+    "pokemon_id_url_id" => "/pokemon/{id_pokemon}/url/{id_url}",
+    "url" => "/url",
+    "url_id" => "/url/{id_url}",
+    "type" => "/type",
+    "type_id" => "/type/{id}"
+
+];
+
 $c = new \Slim\Container($configuration);
 $app = new \Slim\App($c);
 
 
-$app->get('/pokemon', function ($request,$response) {
+$app->get($route["pokemon"].$route["url"], function ($request,$response) {
+
 
 
     //instantiate DB & connect
@@ -28,109 +40,40 @@ $app->get('/pokemon', function ($request,$response) {
     $db = $database->connect();
 
 
-    $pokemon = new Pokemon($db);
-    $result = $pokemon->read();
+    $url = new Url($db);
+    $result = $url->read();
     //get row count
     $num = $result->rowCount();
 
-    //check if any pokemon
     if ($num > 0) {
 
-        $pokemon_arr = array();
-        $pokemon_arr['data'] = array();
+        $url_arr = array();
+        $url_arr['data'] = array();
 
         while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
             extract($row);
 
-            $pokemon_item = array(
-                'id' => $id_pokemon,
-                'nom' => $nom,
-                'url' => 'http://' . $_SERVER['SERVER_NAME'] . ':8050' . $_SERVER['REQUEST_URI'] . '/' . $id_pokemon,
-
+            $url_item = array(
+                'id_url' => $id_url,
+                'libelle' => $Libelle,
             );
 
-            array_push($pokemon_arr['data'], $pokemon_item);
+            array_push($url_arr['data'], $url_item);
         }
 
-        return $response->withJson(array('status' => 'true','count' => count($pokemon_arr['data']), 'result' => $pokemon_arr), 200);
+        return $response->withJson(array('status' => 'true','count' => count($url_arr['data']), 'result' => $url_arr), 200);
     } else {
         return $response->withJson(array('status' => 'Pokemon Not Found'), 422);
     }
 
 
 });
+$app->get($route["pokemon"].$route["type"], function ($request,$response) {
 
 
-$app->get('/pokemon/{id}', function ($request, $response) {
 
-    $id = $request->getAttribute('id');
-    //instantiate DB & connect
-    $database = new Database();
-    $db = $database->connect();
-
-    $pokemon = new Pokemon($db);
-
-
-    //get ID
-    $pokemon->setId($id);
-
-    $pokemon->read_one();
-
-    $pokemon_arr = array(
-        'id_pokemon' => $pokemon->getId(),
-        'nom' => $pokemon->getNom(),
-        'type_1' => $pokemon->getType1(),
-        'type_2' => $pokemon->getType2(),
-        'id_image' => $pokemon->getImage()
-    );
-
-    if ($pokemon_arr['id_pokemon'] !== null) {
-        //convert to json
-        return $response->withJson(array('status' => 'true', 'result' => $pokemon_arr,
-            'url_image' => 'http://' . $_SERVER['SERVER_NAME'] . ':8050' . "/Pokecardss/url" . '/' . $pokemon->getImage(),
-            'url_type1' => 'http://' . $_SERVER['SERVER_NAME'] . ':8050/Pokecardss/type/'.$pokemon->getType1(),
-            'url_type2' => 'http://' . $_SERVER['SERVER_NAME'] . ':8050/Pokecardss/type/'.$pokemon->getType2()),200);
-    } else {
-        return $response->withJson(array('status' => 'Pokemon Not Found'), 422);
-    }
-
-
-});
-
-
-$app->get('/url/{id}', function ($request, $response) {
-
-    $id = $request->getAttribute('id');
-    //instantiate DB & connect
-    $database = new Database();
-    $db = $database->connect();
-
-    $url = new Url($db);
-    //get ID
-    $url->setIdUrl($id);
-    $url->read_one();
-
-
-    $url_arr = array(
-        'id_url' => $url->getIdUrl(),
-        'libelle' => $url->getLibelle(),
-
-    );
-
-    if ($url_arr['id_url'] !== null) {
-        //convert to json
-        return $response->withJson(array('status' => 'true', 'result' => $url_arr), 200);
-    } else {
-        return $response->withJson(array('status' => 'url Not Found'), 422);
-
-    }
-
-
-});
-
-$app->get('/type', function ($request,$response) {
-
-
+    $uri = $request->getUri();
+    $base_url= $uri->getBaseUrl() .'/' . $uri->getPath() ;
     //instantiate DB & connect
     $database = new Database();
     $db = $database->connect();
@@ -153,7 +96,7 @@ $app->get('/type', function ($request,$response) {
             $type_item = array(
                 'id_type' => $id_type,
                 'nom' => $libelle,
-                'url' => 'http://' . $_SERVER['SERVER_NAME'] . ':8050' . $_SERVER['REQUEST_URI'] . '/' . $id_type,
+                'url' => $base_url. '/' . $id_type,
 
             );
 
@@ -167,9 +110,10 @@ $app->get('/type', function ($request,$response) {
 
 
 });
+$app->get($route['pokemon'].$route["type_id"], function ($request, $response) {
 
-$app->get('/type/{id}', function ($request, $response) {
-
+    $uri = $request->getUri();
+    $base_url= $uri->getBaseUrl();
     $id = $request->getAttribute('id');
     //instantiate DB & connect
     $database = new Database();
@@ -189,7 +133,8 @@ $app->get('/type/{id}', function ($request, $response) {
 
     if ($type_arr['id_type'] !== null) {
         //convert to json
-        return $response->withJson(array('status' => 'true', 'result' => $type_arr,'url' => 'http://' . $_SERVER['SERVER_NAME'] . ':8050/Pokecardss/type'), 200);
+        return $response->withJson(array('status' => 'true', 'result' => $type_arr,
+            'url' => $base_url.'/pokemon/type'), 200);
     } else {
         return $response->withJson(array('status' => 'url Not Found'), 422);
 
@@ -197,6 +142,139 @@ $app->get('/type/{id}', function ($request, $response) {
 
 
 });
+$app->get($route["pokemon"], function ($request,$response) {
+
+
+    $uri = $request->getUri();
+    $base_url= $uri->getBaseUrl() .'/' . $uri->getPath() ;
+    //instantiate DB & connect
+    $database = new Database();
+    $db = $database->connect();
+
+
+    $pokemon = new Pokemon($db);
+    $result = $pokemon->read();
+    //get row count
+    $num = $result->rowCount();
+
+    //check if any pokemon
+    if ($num > 0) {
+
+        $pokemon_arr = array();
+        $pokemon_arr['data'] = array();
+
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+            extract($row);
+
+            $pokemon_item = array(
+                'id' => $id_pokemon,
+                'nom' => $nom,
+                'url' => $base_url.'/' . $id_pokemon,
+
+            );
+
+            array_push($pokemon_arr['data'], $pokemon_item);
+        }
+
+        return $response->withJson(array('status' => 'true','count' => count($pokemon_arr['data']), 'result' => $pokemon_arr), 200);
+    } else {
+        return $response->withJson(array('status' => 'Pokemon Not Found'), 422);
+    }
+
+
+});
+
+
+$app->get($route["pokemon_id"], function ($request, $response) {
+
+
+    $id = $request->getAttribute('id');
+    $uri = $request->getUri();
+    $base_url= $uri->getBaseUrl() .'/' . $uri->getPath() ;
+
+
+    //instantiate DB & connect
+    $database = new Database();
+    $db = $database->connect();
+
+    $pokemon = new Pokemon($db);
+
+
+    //get ID
+    $pokemon->setId($id);
+    $pokemon->read_one();
+
+    $pokemon_arr = array(
+        'id_pokemon' => $pokemon->getId(),
+        'nom' => $pokemon->getNom(),
+        'type_1' => $pokemon->getType1(),
+        'type_2' => $pokemon->getType2(),
+        'id_image' => $pokemon->getImage()
+    );
+
+    if ($pokemon_arr['id_pokemon'] !== null) {
+        if($pokemon->getType2()!=null){
+            return $response->withJson(array('status' => 'true', 'result' => $pokemon_arr,
+                'url_image' => $base_url . '/url/' . $pokemon->getImage() ,
+                'url_type1' => $base_url . '/type/' .$pokemon->getType1(),
+                'url_type2' => $base_url .'/type/'.$pokemon->getType2()),200);
+        }else {
+            return $response->withJson(array('status' => 'true', 'result' => $pokemon_arr,
+                'url_image' => $base_url . '/url/' . $pokemon->getImage() ,
+                'url_type1' => $base_url . '/type/' .$pokemon->getType1()),200);
+
+        }
+
+    } else {
+        return $response->withJson(array('status' => 'Pokemon Not Found'), 422);
+    }
+
+
+});
+
+
+$app->get($route['pokemon_id_url_id'], function ($request, $response) {
+
+    $id_pokemon = $request->getAttribute('id_pokemon');
+    $id_url = $request->getAttribute('id_url');
+
+    $uri = $request->getUri();
+    $base_url= $uri->getBaseUrl() .'/'  ;
+    //instantiate DB & connect
+    $database = new Database();
+    $db = $database->connect();
+
+    $url = new Url($db);
+    //get ID
+    $url->setIdUrl($id_url);
+    $url->read_one();
+
+
+    $url_arr = array(
+        'id_url' => $url->getIdUrl(),
+        'libelle' => $url->getLibelle(),
+
+    );
+    if($id_url == $id_pokemon){
+        if ($url_arr['id_url'] !== null) {
+            //convert to json
+            return $response->withJson(array('status' => 'true', 'result' => $url_arr,
+                'url' => $base_url.'pokemon/url'), 200);
+        }
+    } else {
+        return $response->withJson(array('status' => 'url Not Found'), 422);
+
+    }
+
+
+});
+
+
+
+
+
+
+
 
 
 
