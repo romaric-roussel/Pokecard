@@ -18,26 +18,45 @@ class Url{
         $this->conn = $db;
     }
 
-
-    public function read_one() {
+    //create pokemon
+    public function create() {
         //create query
-        $query = 'Select * from url where id_url = ? LIMIT 0,1';
-
+        $query = 'INSERT INTO url (libelle) VALUES (:libelle)';
         //prepare statement
         $stmt = $this->conn->prepare($query);
 
-        //BIND id
-        $stmt->bindParam(1, $this->id_url);
+        //BIND data
+        //$stmt->bindParam(':id_type', $this->id_pokemon);
+        $stmt->bindParam(':libelle', $this->libelle);
+
 
         //execute query
-        $stmt->execute();
+        if($stmt->execute()){
+            return true;
+        }
 
+        printf("Error : %s.\n",$stmt->error);
+
+        return false;
+
+    }
+
+    //Get 1 url
+    public function read_one($id) {
+        //create query
+        $query = 'Select libelle from url where id_url = ' . $id;
+
+        //prepare statement
+        $stmt = $this->conn->prepare($query);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         //set properties
         $this->setIdUrl($row['id_url']);
-        $this->setLibelle($row['Libelle']);
+        $this->setLibelle($row['libelle']);
+
+        //execute query
+        $stmt->execute();
 
         return $stmt;
     }

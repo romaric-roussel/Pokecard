@@ -65,6 +65,76 @@ class Pokemon {
         return $stmt;
     }
 
+    //create pokemon
+    public function create() {
+        //create query
+        $query = 'INSERT INTO  pokemon (id_pokemon,nom,id_type1,id_type2,id_image) VALUES (:id,:nom,:type_1,:type_2,:image)';
+        //prepare statement
+        $stmt = $this->conn->prepare($query);
+
+        //BIND data
+        $stmt->bindParam(':id', $this->id_pokemon);
+        $stmt->bindParam(':nom', $this->nom);
+        $stmt->bindParam(':type_1', $this->id_type1);
+        $stmt->bindParam(':type_2', $this->id_type2);
+        $stmt->bindParam(':image', $this->id_image);
+
+        //execute query
+        if($stmt->execute()){
+            return true;
+        }
+
+        printf("Error : %s.\n",$stmt->error);
+
+        return false;
+    }
+
+    //Update pokemon
+    public function update() {
+        //create query
+        $query = "UPDATE pokemon SET nom = :nom, id_type1 = :id_type1, id_type2 = :id_type2,id_image = :id_image where id_pokemon = :id_pokemon";
+        //prepare statement
+        $stmt = $this->conn->prepare($query);
+
+        //BIND data
+        $stmt->bindParam(':id_pokemon', $this->id_pokemon);
+        $stmt->bindParam(':nom', $this->nom);
+        $stmt->bindParam(':id_type1', $this->id_type1);
+        $stmt->bindParam(':id_type2', $this->id_type2);
+        $stmt->bindParam(':id_image', $this->id_image);
+
+
+        //execute query
+        if($stmt->execute()){
+            echo $this->nom . " " . $this->id_type1 . " " . $this->id_type2 . " ". $this->id_image ;
+
+            return true;
+        }
+
+        printf("Error : %s.\n",$stmt->error);
+
+        return false;
+    }
+
+    //Delete pokemon
+    public function delete() {
+        $query = 'DELETE FROM ' .$this->table .' WHERE id = :id';
+
+        //prepare statement
+        $stmt = $this->conn->prepare($query);
+
+        //BIND data
+        $stmt->bindParam(':id', $this->id);
+
+        //execute query
+        if($stmt->execute()){
+            return true;
+        }
+
+        printf("Error : %s.\n",$stmt->error);
+
+        return false;
+    }
 
 
     /**

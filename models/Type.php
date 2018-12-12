@@ -18,6 +18,29 @@ class Type
         $this->conn = $db;
     }
 
+    //create type
+    public function create() {
+        //create query
+        $query = 'INSERT INTO  type (id_type, libelle) VALUES (:id_type,:libelle)';
+        //prepare statement
+        $stmt = $this->conn->prepare($query);
+
+        //BIND data
+        //$stmt->bindParam(':id_type', $this->id_pokemon);
+        $stmt->bindParam(':id_type', $this->id_type);
+        $stmt->bindParam(':libelle', $this->libelle);
+
+
+        //execute query
+        try {
+            $stmt->execute();
+            return true;
+        } catch (PDOException $e){
+            print_r( $e->getMessage( ) , $e->getCode( ) );
+            return false;
+        }
+
+    }
 
     //Get all type
     public function read() {
@@ -32,29 +55,6 @@ class Type
 
         return $stmt;
     }
-
-    public function read_one() {
-    //create query
-    $query = 'Select * from type where id_type = ? LIMIT 0,1';
-
-    //prepare statement
-    $stmt = $this->conn->prepare($query);
-
-    //BIND id
-    $stmt->bindParam(1, $this->id_type);
-
-    //execute query
-    $stmt->execute();
-
-
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    //set properties
-    $this->setIdType($row['id_type']);
-    $this->setLibelle($row['libelle']);
-
-    return $stmt;
-}
 
     /**
      * @return mixed
