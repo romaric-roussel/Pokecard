@@ -15,6 +15,9 @@ class Pokemon {
     private $id_type1;
     private $id_type2;
     private $id_image;
+    private $nom_type1;
+    private $nom_type2;
+    private $libelleUrl;
 
 
     //Constuctor with DB
@@ -40,7 +43,7 @@ class Pokemon {
     //Get 1 pokemon
     public function read_one() {
         //create query
-        $query = 'Select * from pokemon where id_pokemon = ? LIMIT 0,1';
+        $query = 'Select pokemon.id_pokemon,pokemon.nom,pokemon.id_type1,pokemon.id_type2,pokemon.id_image,type1.libelle as type1,type2.libelle as type2,url.Libelle from pokemon left JOIN url on pokemon.id_image = url.id_url left JOIN type type1 on pokemon.id_type1 = type1.id_type left JOIN type type2 on pokemon.id_type2 = type2.id_type where pokemon.id_pokemon =  ? LIMIT 0,1';
 
         //prepare statement
         $stmt = $this->conn->prepare($query);
@@ -60,6 +63,9 @@ class Pokemon {
         $this->setType1($row['id_type1']);
         $this->setType2($row['id_type2']);
         $this->setImage($row['id_image']);
+        $this->setNomType1($row['type1']);
+        $this->setNomType2($row['type2']);
+        $this->setLibelleUrl($row['Libelle']);
 
 
         return $stmt;
@@ -134,7 +140,44 @@ class Pokemon {
         printf("Error : %s.\n",$stmt->error);
 
         return false;
-    }
+    }/**
+ * @return mixed
+ */
+public function getNomType1()
+{
+    return $this->nom_type1;
+}/**
+ * @param mixed $nom_type1
+ */
+public function setNomType1($nom_type1)
+{
+    $this->nom_type1 = $nom_type1;
+}/**
+ * @return mixed
+ */
+public function getNomType2()
+{
+    return $this->nom_type2;
+}/**
+ * @param mixed $nom_type2
+ */
+public function setNomType2($nom_type2)
+{
+    $this->nom_type2 = $nom_type2;
+}/**
+ * @return mixed
+ */
+public function getLibelleUrl()
+{
+    return $this->libelleUrl;
+}/**
+ * @param mixed $libelleUrl
+ */
+public function setLibelleUrl($libelleUrl)
+{
+    $this->libelleUrl = $libelleUrl;
+}
+
 
 
     /**

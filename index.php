@@ -190,7 +190,7 @@ $app->get($route["pokemon_id"], function ($request, $response) {
 
     $id = $request->getAttribute('id');
     $uri = $request->getUri();
-    $base_url= $uri->getBaseUrl() .'/' . $uri->getPath() ;
+    $base_url= $uri->getBaseUrl() ;
 
 
     //instantiate DB & connect
@@ -209,19 +209,22 @@ $app->get($route["pokemon_id"], function ($request, $response) {
         'nom' => $pokemon->getNom(),
         'type_1' => $pokemon->getType1(),
         'type_2' => $pokemon->getType2(),
-        'id_image' => $pokemon->getImage()
+        'id_image' => $pokemon->getImage(),
+        'nom_type_1' => $pokemon->getNomType1(),
+        'nom_type_2' => $pokemon->getNomType2(),
+        'url_image' => $pokemon->getLibelleUrl()
     );
 
     if ($pokemon_arr['id_pokemon'] !== null) {
         if($pokemon->getType2()!=null){
             return $response->withJson(array('status' => 'true', 'result' => $pokemon_arr,
-                'url_image' => $base_url . '/url/' . $pokemon->getImage() ,
-                'url_type1' => $base_url . '/type/' .$pokemon->getType1(),
-                'url_type2' => $base_url .'/type/'.$pokemon->getType2()),200);
+                'url_image' => $base_url .'/'.$uri->getPath(). '/url/' . $pokemon->getImage() ,
+                'url_type1' => $base_url .'/pokemon'. '/type/' .$pokemon->getType1(),
+                'url_type2' => $base_url .'/pokemon'.'/type/'.$pokemon->getType2()),200);
         }else {
             return $response->withJson(array('status' => 'true', 'result' => $pokemon_arr,
-                'url_image' => $base_url . '/url/' . $pokemon->getImage() ,
-                'url_type1' => $base_url . '/type/' .$pokemon->getType1()),200);
+                'url_image' => $base_url .'/pokemon'. '/url/' . $pokemon->getImage() ,
+                'url_type1' => $base_url .'/pokemon'. '/type/' .$pokemon->getType1()),200);
 
         }
 
