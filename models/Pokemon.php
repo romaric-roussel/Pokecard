@@ -29,7 +29,7 @@ class Pokemon {
     //Get all pokemon
     public function read() {
         //create query
-        $query = 'Select * from pokemon';
+        $query = 'SELECT pokemon.id_pokemon,pokemon.nom,url.Libelle FROM pokemon left join url on pokemon.id_image = url.id_url';
 
         //prepare statement
         $stmt = $this->conn->prepare($query);

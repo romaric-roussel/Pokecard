@@ -169,6 +169,7 @@ $app->get($route["pokemon"], function ($request,$response) {
             $pokemon_item = array(
                 'id' => $id_pokemon,
                 'nom' => $nom,
+                'image' => $Libelle,
                 'url' => $base_url.'/' . $id_pokemon,
 
             );
